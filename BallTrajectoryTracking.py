@@ -3,6 +3,8 @@ import cv2 as cv
 import numpy as np
 import time
 
+import aprilTagDetection
+
 BALL_RADIUS = 0.1501 / 2.0
 fovY = 29.99
 realPosList = [[], [], [], []]  # 0 - x, 1 - y, 2 - z, 3 - t
@@ -25,6 +27,9 @@ def TrackBallPos():
         ok, frame = cap.read()
         if not ok:
             continue
+
+        aprilTagDetection.aprilTag3dPosDetection(frame)
+
         hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
         lower = np.array([20, 100, 100])
