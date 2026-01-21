@@ -40,7 +40,8 @@ def aprilTag3dPosDetection(frame):
         ], dtype=np.float32)
 
         success, rvec, tvec = cv2.solvePnP(object_points, r.corners, consts.CAM_MTX, consts.DIST_COEF,
-                                     flags=cv2.SOLVEPNP_SQPNP)
+                                     flags=cv2.SOLVEPNP_ITERATIVE)
+        transformation_matrix = None
         if success:
             # Convert rotation vector (rvec) to rotation matrix (R)
             R, _ = cv2.Rodrigues(rvec)
@@ -50,10 +51,12 @@ def aprilTag3dPosDetection(frame):
             transformation_matrix[:3, :3] = R
             transformation_matrix[:3, 3] = tvec.flatten()
 
-            print("\nTransformation Matrix (Tag relative to Camera):\n", transformation_matrix)
-            print(f"\nTranslation Vector (tvec in meters): {tvec.flatten()}")
+            #print("\nTransformation Matrix (Tag relative to Camera):\n", transformation_matrix)
+            #print(f"\nTranslation Vector (tvec in meters): {tvec.flatten()}")
             abs = math.sqrt(sum([t**2 for t in tvec]))
-            print(abs)
-            print(r.tag_id)
+            # print(abs)
+            #print(r.tag_id)
             # Optional: draw the axes on the image
             cv2.drawFrameAxes(frame, consts.CAM_MTX, consts.DIST_COEF, rvec, tvec, 0.05)
+            return transformation_matrix
+

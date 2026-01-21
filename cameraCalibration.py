@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 # Setup: Change this to match your board (internal corners)
-cap = cv2.VideoCapture(1,cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
 CHESSBOARD_SIZE = (9, 6)
 objp = np.zeros((CHESSBOARD_SIZE[0] * CHESSBOARD_SIZE[1], 3), np.float32)
@@ -28,9 +28,9 @@ while True:
         if k == ord('s'):
             objpoints.append(objp)
             imgpoints.append(corners)
-            if len(imgpoints) > 30:
+            if len(imgpoints) > 100:
                 break
-    cv2.imshow("frame",img)
+    cv2.imshow("frame", img)
 print("starting processing, this may take a while")
 # The Magic Step: returns the Camera Matrix (mtx) and Distortion (dist)
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
