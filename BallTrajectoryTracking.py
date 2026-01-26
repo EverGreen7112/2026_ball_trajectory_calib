@@ -4,6 +4,7 @@ import numpy as np
 import time
 
 import aprilTagDetection
+import recordData
 
 BALL_RADIUS = 0.1501 / 2.0
 fovY = 29.99
@@ -16,8 +17,8 @@ frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
 
 def ballMain():
     TrackBallPos()
-    calc_ball_trajecktory_polynom_on_all_axis()
-
+    #calc_ball_trajecktory_polynom_on_all_axis()
+    return
 
 def TrackBallPos():
     global framePosList, realPosList, polyCoefList
@@ -29,10 +30,7 @@ def TrackBallPos():
             continue
 
         cam_to_tag_mtx = aprilTagDetection.aprilTag3dPosDetection(frame)
-        tag_to_cam_mtx = np.array([[1, 0, 0, 0],
-                                   [0, 1, 0, 0],
-                                   [0, 0, 1, 0],
-                                   [0, 0, 0, 1]])
+        tag_to_cam_mtx = np.eye(4)
         if cam_to_tag_mtx is not None:
             tag_to_cam_mtx = np.linalg.inv(cam_to_tag_mtx)
 
@@ -59,12 +57,12 @@ def TrackBallPos():
             X,Y,pr = project_ball_3d_pos_to_screen(tag_to_cam_mtx,px,py,pz)
             #cv.circle(frame, (int(X), int(Y)), int(pr), (0, 255, 255), 5)
 
-            if start:
+            if start:#
                 framePosList.append((x, y))
                 timeStampList.append(time.time() - startTime)
                 record_ball_3d_pos(Fx=x, Fy=y, frame_width=frame_width, frame_height=frame_hieght,
                                    ball_radius=radius, time=timeStampList[-1], tag_to_cam_mtx=tag_to_cam_mtx)
-
+                r_s, s_s, s_a = recordData.getData()
             cv.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0), 2)
 
         for i in range(1, len(framePosList)):
@@ -149,7 +147,6 @@ def draw_polynom_on_frame(frame,tag_to_cam_mtx):
             cv.line(frame,intPos,prevIntPos,(255,0,0))
 
 def transform_ball_cam_space_to_abs_space(tag_to_cam_mtx, cam_x, cam_y, cam_z):
-    print("???" + str(cam_y))
     cam_ball_pos = np.array([cam_x, cam_y, cam_z, 1.0])
     ball_absolute_pos = tag_to_cam_mtx @ cam_ball_pos
 
