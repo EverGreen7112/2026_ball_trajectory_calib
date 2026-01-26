@@ -67,5 +67,5 @@ def aprilTag3dPosDetection(frame):
             # print(abs)
             #print(r.tag_id)
             # Optional: draw the axes on the image
-            return transformation_matrix
+        return transformation_matrix
 

@@ -23,6 +23,7 @@ def ballMain():
 def TrackBallPos():
     global framePosList, realPosList, polyCoefList
     start = False
+    tag_to_cam_mtx = np.eye(4)
     timeStampList = []
     while True:
         ok, frame = cap.read()
@@ -30,7 +31,6 @@ def TrackBallPos():
             continue
 
         cam_to_tag_mtx = aprilTagDetection.aprilTag3dPosDetection(frame)
-        tag_to_cam_mtx = np.eye(4)
         if cam_to_tag_mtx is not None:
             tag_to_cam_mtx = np.linalg.inv(cam_to_tag_mtx)
 
