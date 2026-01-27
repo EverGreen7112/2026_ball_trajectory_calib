@@ -20,6 +20,8 @@ cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
 cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*'MJPG'))
+cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25)
+cap.set(cv.CAP_PROP_EXPOSURE,-8 )
 
 
 def TrackBallPos():
@@ -73,7 +75,7 @@ def TrackBallPos():
             cv.circle(frame, (int(pos[0]), int(pos[1])), 2, (0, 255, 0), cv.FILLED)
             if (len(framePosList) > 0):
                 cv.line(frame, pos, (int(framePosList[i - 1][0]), int(framePosList[i - 1][1])), (0, 0, 255), 1)
-        cv.imshow('screen', mask)
+        #cv.imshow('screen', mask)
         if len(realPosList[0]) >= 2:
             calc_ball_trajecktory_polynom_on_all_axis()
             draw_polynom_on_frame(frame, tag_to_cam_mtx)
