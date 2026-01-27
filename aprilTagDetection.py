@@ -9,10 +9,10 @@ import pupil_apriltags as apriltag
 
 at_detector = apriltag.Detector(families='tag36h11')
 
-
+prev_tvec = None
+prev_rvec = None
 def aprilTag3dPosDetection(frame):
-
-
+    global prev_rvec, prev_tvec
     # Load image and convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -43,8 +43,14 @@ def aprilTag3dPosDetection(frame):
                                      flags=cv2.SOLVEPNP_ITERATIVE)
         transformation_matrix = None
         if success:
+            if (prev_rvec is not None and prev_tvec is not None):
+                tvec = (prev_tvec + tvec) / 2
+                rvec = (prev_rvec + rvec) / 2
+
+
+
             cv2.drawFrameAxes(frame, consts.CAM_MTX, consts.DIST_COEF, rvec, tvec, 0.05)
-            tvec[1] *= -1
+            #tvec[1] *= -1
             # Convert rotation vector (rvec) to rotation matrix (R)
             R, _ = cv2.Rodrigues(rvec)
 
@@ -67,5 +73,7 @@ def aprilTag3dPosDetection(frame):
             # print(abs)
             #print(r.tag_id)
             # Optional: draw the axes on the image
+            prev_tvec = tvec
+            prev_rvec = rvec
         return transformation_matrix
 

@@ -21,7 +21,6 @@ def write_data(CoefList, r_s, s_s, s_a):
         except:
             # Handle cases where the file might be empty or corrupted
             current_content = []
-            print("hi")
 
     # Deconstructing each sub-list
     for p , v, a, j in CoefList:

@@ -1,8 +1,14 @@
 import numpy as np
 import cv2
 
-# Setup: Change this to match your board (internal corners)
 cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+frame_hieght = 720
+frame_width = 1280
+cap.set(cv2.CAP_PROP_FRAME_WIDTH,frame_width)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT,frame_hieght)
+cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
+cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+# Setup: Change this to match your board (internal corners)
 
 CHESSBOARD_SIZE = (9, 6)
 objp = np.zeros((CHESSBOARD_SIZE[0] * CHESSBOARD_SIZE[1], 3), np.float32)
@@ -15,6 +21,8 @@ imgpoints = [] # 2d points in image plane
 
 while True:
     ok,img = cap.read()
+    print(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     if not ok :
         continue
 
@@ -28,7 +36,7 @@ while True:
         if k == ord('s'):
             objpoints.append(objp)
             imgpoints.append(corners)
-            if len(imgpoints) > 100:
+            if len(imgpoints) > 50:
                 break
     cv2.imshow("frame", img)
 print("starting processing, this may take a while")
