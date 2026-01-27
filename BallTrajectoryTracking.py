@@ -6,22 +6,16 @@ import time
 import aprilTagDetection
 import consts
 import recordData
+from consts import cap
 
 BALL_RADIUS = 0.1501 / 2.0
 realPosList = [[], [], [], []]  # 0 - x, 1 - y, 2 - z, 3 - t
 framePosList = []
 polyCoefList = [[], [], []]
-cap = cv.VideoCapture(1, cv.CAP_DSHOW)
 frame_height = 720
 frame_width = 1280
 fovY = math.degrees(2 * math.atan((frame_height) / (2 * consts.CAM_MTX[1][1])))
 
-cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
-cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
-cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
-cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*'MJPG'))
-cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25)
-cap.set(cv.CAP_PROP_EXPOSURE,-8 )
 
 
 def TrackBallPos():
@@ -41,8 +35,8 @@ def TrackBallPos():
 
         hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-        lower = np.array([20, 100, 100])
-        upper = np.array([30, 255, 255])
+        lower = np.array([16, 97, 35])
+        upper = np.array([32, 255, 198])
 
         mask = cv.inRange(hsv_frame, lower, upper)
         mask = cv.medianBlur(mask, 9)

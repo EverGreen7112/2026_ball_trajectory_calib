@@ -1,14 +1,6 @@
 import numpy as np
 import cv2
-
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-frame_hieght = 720
-frame_width = 1280
-cap.set(cv2.CAP_PROP_FRAME_WIDTH,frame_width)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT,frame_hieght)
-cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
-cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-# Setup: Change this to match your board (internal corners)
+from consts import cap
 
 CHESSBOARD_SIZE = (9, 6)
 objp = np.zeros((CHESSBOARD_SIZE[0] * CHESSBOARD_SIZE[1], 3), np.float32)
