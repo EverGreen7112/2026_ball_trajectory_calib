@@ -49,7 +49,7 @@ class NanoShooterNet(nn.Module):
     def __init__(self):
         super(NanoShooterNet, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(6, 16),
+            nn.Linear(9, 16),
             nn.Tanh(),  # Smooth curves for physics
             nn.Linear(16, 8),
             nn.Tanh(),

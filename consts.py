@@ -16,4 +16,6 @@ cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
 cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*'MJPG'))
 cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25)
-cap.set(cv.CAP_PROP_EXPOSURE,-7.5 )
+cap.set(cv.CAP_PROP_EXPOSURE, -7.5)
+cap.set(cv.CAP_PROP_BRIGHTNESS, 128)
+

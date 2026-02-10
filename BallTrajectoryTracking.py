@@ -9,7 +9,7 @@ import recordData
 from consts import cap
 
 BALL_RADIUS = 0.1501 / 2.0
-realPosList = [[], [], [], []]  # 0 - x, 1 - y, 2 - z, 3 - t
+realPosList = [[], [], [], []]  #0 - x, 1 - y, 2 - z, 3 - t
 framePosList = []
 polyCoefList = [[], [], []]
 frame_height = 720
@@ -21,6 +21,7 @@ fovY = math.degrees(2 * math.atan((frame_height) / (2 * consts.CAM_MTX[1][1])))
 def TrackBallPos():
     global framePosList, realPosList, polyCoefList
     start = False
+    transmit = False
     tag_to_cam_mtx = np.eye(4)
     prev_mtx = np.eye(4)
     timeStampList = []
@@ -35,14 +36,14 @@ def TrackBallPos():
 
         hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-        lower = np.array([16, 97, 35])
-        upper = np.array([32, 255, 198])
+        lower = np.array([16, 220, 112])
+        upper = np.array([26, 255, 255])
 
         mask = cv.inRange(hsv_frame, lower, upper)
         mask = cv.medianBlur(mask, 9)
 
-        mask = cv.erode(mask, None, iterations=2)
-        mask = cv.dilate(mask, None, iterations=2)
+        mask = cv.erode(mask, None, iterations=4)
+        mask = cv.dilate(mask, None, iterations=4)
         contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
         if len(contours) > 0:
@@ -60,7 +61,6 @@ def TrackBallPos():
                 timeStampList.append(time.time() - startTime)
                 record_ball_3d_pos(Fx=x, Fy=y, frame_width=frame_width, frame_height=frame_height,
                                    ball_radius=radius, time=timeStampList[-1], tag_to_cam_mtx=tag_to_cam_mtx)
-                r_s, s_s, s_a = recordData.getData()
             cv.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0), 2)
 
         for i in range(1, len(framePosList)):
@@ -75,19 +75,22 @@ def TrackBallPos():
             draw_polynom_on_frame(frame, tag_to_cam_mtx)
         cv.imshow("pain", frame)
         k = cv.waitKey(1)
-        if k == ord('q'):
+        if k == ord('q') or recordData.getTransmitStop():
             # print(calc_ball_trajecktory_polynom_on_all_axis())
             # print(len(realPosList[0]))
             if len(realPosList[0]) >= 2:
                 calc_ball_trajecktory_polynom_on_all_axis()
                 draw_polynom_on_frame(frame, tag_to_cam_mtx)
                 cv.imshow("pain", frame)
+                recordData.write_data(polyCoefList,0,0,0,recordData.get_shooter_speed(),0,0)
                 cv.waitKey(0)
+
             break
-        if k == ord('s'):
+        if k == ord('s') or recordData.getTransmitStop():
             start = not start
             startTime = time.time()
-        if k == ord('r'):
+
+        if k == ord('r') or recordData.getTransmitRestart():
             framePosList = []
             realPosList = [[], [], [], []]
             polyCoefList = [[], [], []]
@@ -160,3 +163,9 @@ def transform_ball_abs_space_to_cam_space(tag_to_cam_mtx, tag_x, tag_y, tag_z):
     ball_absolute_pos = inv_mtx @ cam_ball_pos
 
     return ball_absolute_pos[:3]
+def calc_intial_speed():
+    x = polyCoefList[0][1]
+    y = polyCoefList[1][1]
+    z = polyCoefList[2][1]
+
+    return (x,y,z)

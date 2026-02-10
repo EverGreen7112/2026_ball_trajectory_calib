@@ -75,5 +75,10 @@ def aprilTag3dPosDetection(frame):
             # Optional: draw the axes on the image
             prev_tvec = tvec
             prev_rvec = rvec
+            shooter_mtx = np.array([[1,0,0,0],
+                                    [0,1,0,0.01],
+                                    [0,0,1,0.485],
+                                    [0,0,0,1]])
+            transformation_matrix = transformation_matrix @ shooter_mtx
         return transformation_matrix
 
