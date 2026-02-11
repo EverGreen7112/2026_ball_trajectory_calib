@@ -10,7 +10,8 @@ TAG_SIZE = 0.1651
 frame_height = 720
 frame_width = 1280
 
-cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+#cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+cap = cv.VideoCapture("film/learn/learn edited/-0.1051025390625_8.5.e.mp4")
 cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
 cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
@@ -19,3 +20,13 @@ cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25)
 cap.set(cv.CAP_PROP_EXPOSURE, -7.5)
 cap.set(cv.CAP_PROP_BRIGHTNESS, 128)
 
+def setup(filepath):
+    cap = cv.VideoCapture(filepath)
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
+    cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*'MJPG'))
+    cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25)
+    cap.set(cv.CAP_PROP_EXPOSURE, -7.5)
+    cap.set(cv.CAP_PROP_BRIGHTNESS, 128)
+    return cap

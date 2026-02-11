@@ -69,7 +69,7 @@ def aprilTag3dPosDetection(frame):
 
             #print("\nTransformation Matrix (Tag relative to Camera):\n", transformation_matrix)
             #print(f"\nTranslation Vector (tvec in meters): {tvec.flatten()}")
-            abs = math.sqrt(sum([t**2 for t in tvec]))
+            abs = np.sqrt(np.sum([t**2 for t in tvec]))
             # print(abs)
             #print(r.tag_id)
             # Optional: draw the axes on the image

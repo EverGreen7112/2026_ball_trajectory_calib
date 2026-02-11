@@ -1,4 +1,6 @@
 import math
+from tty import ISPEED
+
 import cv2 as cv
 import numpy as np
 import time
@@ -6,7 +8,7 @@ import time
 import aprilTagDetection
 import consts
 import recordData
-from consts import cap
+#from consts import cap
 
 BALL_RADIUS = 0.1501 / 2.0
 realPosList = [[], [], [], []]  #0 - x, 1 - y, 2 - z, 3 - t
@@ -17,14 +19,15 @@ frame_width = 1280
 fovY = math.degrees(2 * math.atan((frame_height) / (2 * consts.CAM_MTX[1][1])))
 
 
-
-def TrackBallPos():
+def TrackBallPos(cap, speed):
     global framePosList, realPosList, polyCoefList
     start = False
     transmit = False
     tag_to_cam_mtx = np.eye(4)
     prev_mtx = np.eye(4)
     timeStampList = []
+    startTime = time.time()
+
     while True:
         ok, frame = cap.read()
         if not ok:
@@ -52,14 +55,13 @@ def TrackBallPos():
             px, py, pz = calc_ball_3d_pos(tag_to_cam_mtx, x, y, frame_width, frame_height, radius)
 
             # print((px,py,pz))
-            print(math.sqrt(px ** 2 + py ** 2 + pz ** 2))
-            X, Y, pr = project_ball_3d_pos_to_screen(tag_to_cam_mtx, px, py, pz)
-            cv.circle(frame, (int(X), int(Y)), int(pr), (0, 255, 255), 5)
+            # print(math.sqrt(px ** 2 + py ** 2 + pz ** 2))
+            # X, Y, pr = project_ball_3d_pos_to_screen(tag_to_cam_mtx, px, py, pz)
+            # cv.circle(frame, (int(X), int(Y)), int(pr), (0, 255, 255), 5)
 
-            if start:  #
-                framePosList.append((x, y))
-                timeStampList.append(time.time() - startTime)
-                record_ball_3d_pos(Fx=x, Fy=y, frame_width=frame_width, frame_height=frame_height,
+            framePosList.append((x, y))
+            timeStampList.append(time.time() - startTime)
+            record_ball_3d_pos(Fx=x, Fy=y, frame_width=frame_width, frame_height=frame_height,
                                    ball_radius=radius, time=timeStampList[-1], tag_to_cam_mtx=tag_to_cam_mtx)
             cv.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0), 2)
 
@@ -70,31 +72,31 @@ def TrackBallPos():
             if (len(framePosList) > 0):
                 cv.line(frame, pos, (int(framePosList[i - 1][0]), int(framePosList[i - 1][1])), (0, 0, 255), 1)
         #cv.imshow('screen', mask)
-        if len(realPosList[0]) >= 2:
-            calc_ball_trajecktory_polynom_on_all_axis()
-            draw_polynom_on_frame(frame, tag_to_cam_mtx)
-        cv.imshow("pain", frame)
-        k = cv.waitKey(1)
-        if k == ord('q') or recordData.getTransmitStop():
-            # print(calc_ball_trajecktory_polynom_on_all_axis())
-            # print(len(realPosList[0]))
-            if len(realPosList[0]) >= 2:
-                calc_ball_trajecktory_polynom_on_all_axis()
-                draw_polynom_on_frame(frame, tag_to_cam_mtx)
-                cv.imshow("pain", frame)
-                recordData.write_data(polyCoefList,0,0,0,recordData.get_shooter_speed(),0,0)
-                cv.waitKey(0)
+        #if len(realPosList[0]) >= 2:
+        calc_ball_trajecktory_polynom_on_all_axis()
+        #     draw_polynom_on_frame(frame, tag_to_cam_mtx)
+        # cv.imshow("pain", frame)
 
-            break
-        if k == ord('s') or recordData.getTransmitStop():
-            start = not start
-            startTime = time.time()
-
-        if k == ord('r') or recordData.getTransmitRestart():
-            framePosList = []
-            realPosList = [[], [], [], []]
-            polyCoefList = [[], [], []]
-
+        recordData.write_data(polyCoefList, 0, 0, 0, speed, 0, 0)
+        # if k == ord('q') or recordData.getTransmitStop():
+        #     # print(calc_ball_trajecktory_polynom_on_all_axis())
+        #     # print(len(realPosList[0]))
+        #     if len(realPosList[0]) >= 2:
+        #         calc_ball_trajecktory_polynom_on_all_axis()
+        #         draw_polynom_on_frame(frame, tag_to_cam_mtx)
+        #         cv.imshow("pain", frame)
+        #         recordData.write_data(polyCoefList,0,0,0,recordData.get_shooter_speed(),0,0)
+        #         cv.waitKey(0)
+        #
+        #     break
+        # if k == ord('s') or recordData.getTransmitStop():
+        #     start = not start
+        #     startTime = time.time()
+        #
+        # if k == ord('r') or recordData.getTransmitRestart():
+        #     framePosList = []
+        #     realPosList = [[], [], [], []]
+        #     polyCoefList = [[], [], []]
 
 def calc_ball_3d_pos(tag_to_cam_mtx, Fx, Fy, frame_width, frame_height, ball_radius):
     plainY = (2.0 * BALL_RADIUS * frame_height) / (2.0 * ball_radius)
