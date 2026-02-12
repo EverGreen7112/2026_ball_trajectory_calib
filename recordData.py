@@ -44,6 +44,8 @@ def get_shooter_speed():
     return shooter_speed.get()
 
 def write_data(CoefList, r_s_x, r_s_y, r_a_s, s_s, s_a, f_s):
+    if not CoefList or CoefList[0] is None:
+        return
 
     with open("data.json", 'r') as f:
         try:
@@ -61,7 +63,7 @@ def write_data(CoefList, r_s_x, r_s_y, r_a_s, s_s, s_a, f_s):
             "j": j
         }
         current_content.append(entry)
-        current_content.append({0, 0, 0, s_s, 0, 0})#{r_s_x, r_s_y, r_a_s, s_s, s_a, f_s})
+        current_content.append([0, 0, 0, s_s, 0, 0])#{r_s_x, r_s_y, r_a_s, s_s, s_a, f_s})
     # Write the list of dictionaries to a file
     with open("data.json", "w") as f:
         f.write(json.dumps(current_content))
