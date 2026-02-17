@@ -1,13 +1,13 @@
 import math
 
-import cv2 as cv
-
 import consts
 import cv2
 import numpy as np
 import pupil_apriltags as apriltag
 
-at_detector = apriltag.Detector(families='tag36h11')
+at_detector = apriltag.Detector(families='tag36h11', quad_sigma=0.8)
+R_TOLERANCE = 0.0008
+T_TOLERANCE = 0.05
 
 prev_tvec = None
 prev_rvec = None
@@ -39,10 +39,20 @@ def aprilTag3dPosDetection(frame):
             [-half_size, half_size, 0]
         ], dtype=np.float32)
 
-        success, rvec, tvec = cv2.solvePnP(object_points, r.corners, consts.CAM_MTX, consts.DIST_COEF,
+        success_v1, rvec_v1, tvec_v1 = cv2.solvePnP(object_points, r.corners, consts.CAM_MTX, consts.DIST_COEF,
                                      flags=cv2.SOLVEPNP_ITERATIVE)
+        success_v2, rvec_v2, tvec_v2 = cv2.solvePnP(object_points, r.corners, consts.CAM_MTX, consts.DIST_COEF,
+                                           flags=cv2.SOLVEPNP_SQPNP)
         transformation_matrix = None
-        if success:
+        if (success_v1 and success_v2 and
+            np.linalg.norm(rvec_v1 - rvec_v2) % (2 * np.pi) < R_TOLERANCE and
+            np.linalg.norm(tvec_v1 - tvec_v2) < T_TOLERANCE):
+            tvec = 0.5 * (tvec_v1 + tvec_v2)
+            rvec = rvec_v2 #0.5 * ((rvec_v1 % (2 * np.pi))  + (rvec_v2 % (2 * np.pi)))
+
+            raw_tvec = tvec
+            raw_rvec = rvec
+
             if (prev_rvec is not None and prev_tvec is not None):
                 tvec = (prev_tvec + tvec) / 2
                 rvec = (prev_rvec + rvec) / 2
@@ -73,12 +83,15 @@ def aprilTag3dPosDetection(frame):
             # print(abs)
             #print(r.tag_id)
             # Optional: draw the axes on the image
-            prev_tvec = tvec
-            prev_rvec = rvec
+            prev_tvec = raw_tvec
+            prev_rvec = raw_rvec
             shooter_mtx = np.array([[1,0,0,0],
                                     [0,1,0,0.01],
                                     [0,0,1,0.485],
                                     [0,0,0,1]])
             transformation_matrix = transformation_matrix @ shooter_mtx
+        else:
+            if prev_tvec is not None and prev_rvec is not None:
+                cv2.drawFrameAxes(frame, consts.CAM_MTX, consts.DIST_COEF, prev_rvec, prev_tvec, 0.05)
         return transformation_matrix
 

@@ -2,3 +2,4 @@ pnumpy
 opencv-python
 pupil-apriltags
 pyntcore
+matplotlib

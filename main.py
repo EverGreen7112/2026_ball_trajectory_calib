@@ -1,6 +1,7 @@
-import BallTrajectoryTracking
+#import BallTrajectoryTracking
+import dataColection
 import process
-import recordData
+#import recordData
 
 if __name__ == '__main__':
     #BallTrajectoryTracking.TrackBallPos()
@@ -8,3 +9,5 @@ if __name__ == '__main__':
     #recordData.write_data(templist,13,14,15)
 
     process.process()
+    #dataColection.make_window()
+

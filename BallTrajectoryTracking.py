@@ -21,7 +21,7 @@ frame_width = 1280
 fovY = math.degrees(2 * math.atan((frame_height) / (2 * consts.CAM_MTX[1][1])))
 
 
-def TrackBallPos(cap, speed):
+def TrackBallPos(cap, speed, angle):
     global framePosList, realPosList, polyCoefList
 
     # Good: Data resets at the start of every video
@@ -78,14 +78,12 @@ def TrackBallPos(cap, speed):
             # Draw the yellow mathematical prediction path
             draw_polynom_on_frame(frame, tag_to_cam_mtx)
 
-            # Save results to JSON
-            recordData.write_data(polyCoefList, 0, 0, 0, speed, 0, 0)
-
         # FIX 2: You need these lines to see the video on Windows
         cv.imshow('Processing...', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to skip a video
             break
-
+            # Save results to JSON
+    recordData.write_data(polyCoefList, 0, 0, 0, speed, angle, 0)
     # Clean up window before starting the next video
     cv.destroyAllWindows()
 def calc_ball_3d_pos(tag_to_cam_mtx, Fx, Fy, frame_width, frame_height, ball_radius):

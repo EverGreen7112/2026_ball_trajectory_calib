@@ -43,27 +43,37 @@ def getData():
 def get_shooter_speed():
     return shooter_speed.get()
 
-def write_data(CoefList, r_s_x, r_s_y, r_a_s, s_s, s_a, f_s):
+def write_data(CoefList, robot_vel_x, robot_vel_y, robot_angular_v, shooter_vel, aim_angle, feeder_vel):
     if not CoefList or CoefList[0] is None:
         return
 
     with open("data.json", 'r') as f:
         try:
-            current_content = json.loads(f.read())
+            json_contents = json.loads(f.read())
         except:
             # Handle cases where the file might be empty or corrupted
-            current_content = []
+            json_contents = []
 
     # Deconstructing each sub-list
-    for p, v, a, j in CoefList:
+    cur_example = dict()
+    cur_example["robot_state"] = {
+        "robot_vel_x": robot_vel_x,
+        "robot_vel_y": robot_vel_y,
+        "robot_angular_v": robot_angular_v,
+        "shooter_vel": shooter_vel,
+        "aim_angle": aim_angle,
+        "feeder_vel": feeder_vel
+    }
+    NAMES = ["x", "y", "z"]
+    for i, (p, v, a, j) in enumerate(CoefList):
         entry = {
             "p": p,
             "v": v,
             "a": a,
             "j": j
         }
-        current_content.append(entry)
-        current_content.append([0, 0, 0, s_s, 0, 0])#{r_s_x, r_s_y, r_a_s, s_s, s_a, f_s})
+        cur_example[NAMES[i]] = entry
+    json_contents.append(cur_example)
     # Write the list of dictionaries to a file
     with open("data.json", "w") as f:
-        f.write(json.dumps(current_content))
+        f.write(json.dumps(json_contents))
