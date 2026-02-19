@@ -85,13 +85,44 @@ def aprilTag3dPosDetection(frame):
             # Optional: draw the axes on the image
             prev_tvec = raw_tvec
             prev_rvec = raw_rvec
-            shooter_mtx = np.array([[1,0,0,0],
-                                    [0,1,0,0.01],
-                                    [0,0,1,0.485],
-                                    [0,0,0,1]])
-            transformation_matrix = transformation_matrix @ shooter_mtx
+
+            transformation_matrix = transformation_matrix @ consts.SHOOTER_MTX
         else:
             if prev_tvec is not None and prev_rvec is not None:
                 cv2.drawFrameAxes(frame, consts.CAM_MTX, consts.DIST_COEF, prev_rvec, prev_tvec, 0.05)
         return transformation_matrix
 
+def get_transformation(cap: cv2.VideoCapture) -> np.ndarray | None:
+    global prev_rvec, prev_tvec
+    prev_tvec = None
+    prev_rvec = None
+    tvec_sum = np.array([[0.0], [0.0], [0.0]])
+    rvec_sum = np.array([[0.0], [0.0], [0.0]])
+    count = 0
+    while True:
+        ok, frame = cap.read()
+        if not ok:
+            print("finished calculating matrix")
+            break
+        transform = aprilTag3dPosDetection(frame)
+        if transform is not None:
+            tvec_sum += prev_tvec
+            rvec_sum += prev_rvec
+            count += 1
+    if count > 0:
+        tvec = tvec_sum / count
+        rvec = rvec_sum / count
+        R, _ = cv2.Rodrigues(rvec)
+        extrinsic_matrix = np.hstack((R, tvec))
+
+        # Create the bottom row [0, 0, 0, 1]
+        bottom_row = np.array([0, 0, 0, 1]).reshape(1, 4)
+
+        # Combine to form the 4x4 homogeneous transformation matrix
+        transformation_matrix = np.vstack((extrinsic_matrix, bottom_row))
+        return transformation_matrix # @ consts.SHOOTER_MTX
+    return None
+
+def draw_axis(frame: np.ndarray):
+    if prev_tvec is not None and prev_rvec is not None:
+        cv2.drawFrameAxes(frame, consts.CAM_MTX, consts.DIST_COEF, prev_rvec, prev_tvec, 0.05)

@@ -65,14 +65,20 @@ def write_data(CoefList, robot_vel_x, robot_vel_y, robot_angular_v, shooter_vel,
         "feeder_vel": feeder_vel
     }
     NAMES = ["x", "y", "z"]
-    for i, (p, v, a, j) in enumerate(CoefList):
+    for i, coefs in enumerate(CoefList):
+        if i == 3:
+            (p, v, a, j) = coefs
+        else:
+            (p, v, a) = coefs
+            j = 0.0
         entry = {
-            "p": p,
-            "v": v,
+            "j": j,
             "a": a,
-            "j": j
+            "v": v,
+            "p": p
         }
         cur_example[NAMES[i]] = entry
+        print(f"-({p} + ({v}x) + ({a}x^2) + ({j}x^3))")
     json_contents.append(cur_example)
     # Write the list of dictionaries to a file
     with open("data.json", "w") as f:

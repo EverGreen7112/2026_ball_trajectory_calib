@@ -1,5 +1,7 @@
-pnumpy
-opencv-python
+numpy
+opencv-python~=4.13.0.92
 pupil-apriltags
 pyntcore
-matplotlib
+matplotlib~=3.10.8
+pupil_apriltags~=1.0.4.post11
+fonttools~=4.61.1

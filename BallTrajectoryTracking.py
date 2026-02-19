@@ -1,13 +1,19 @@
 import math
+
+import cv2
 #from tty import ISPEED
 
 import cv2 as cv
 import numpy as np
 import time
 
+from fontTools.merge.util import current_time
+
 import aprilTagDetection
 import consts
 import recordData
+from aprilTagDetection import draw_axis
+
 #from consts import cap
 
 ISPEED = 115200
@@ -18,10 +24,10 @@ framePosList = []
 polyCoefList = [[], [], []]
 frame_height = 720
 frame_width = 1280
-fovY = math.degrees(2 * math.atan((frame_height) / (2 * consts.CAM_MTX[1][1])))
+fovY = math.degrees(2 * math.atan(frame_height / (2 * consts.CAM_MTX[1][1])))
 
 
-def TrackBallPos(cap, speed, angle):
+def TrackBallPos(cap, speed, angle, cam_to_tag_mtx):
     global framePosList, realPosList, polyCoefList
 
     # Good: Data resets at the start of every video
@@ -30,19 +36,19 @@ def TrackBallPos(cap, speed, angle):
     polyCoefList = [None, None, None]
 
     tag_to_cam_mtx = np.eye(4)
-    startTime = time.time()
+    if cam_to_tag_mtx is not None:
+        tag_to_cam_mtx = np.linalg.inv(cam_to_tag_mtx)
+
 
     while True:
+
         ok, frame = cap.read()
+        curr_time = (cap.get(cv2.CAP_PROP_POS_MSEC)) / 1000
 
         if not ok:
             # FIX 1: Break the loop so process.py can move to the next video
             print("Finished processing video.")
             break
-
-        cam_to_tag_mtx = aprilTagDetection.aprilTag3dPosDetection(frame)
-        if cam_to_tag_mtx is not None:
-            tag_to_cam_mtx = np.linalg.inv(cam_to_tag_mtx)
 
         # ... (HSV and Contour logic) ...
         hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
@@ -59,9 +65,8 @@ def TrackBallPos(cap, speed, angle):
             ((x, y), radius) = cv.minEnclosingCircle(ball)
 
             # Record data
-            time_now = time.time() - startTime
             record_ball_3d_pos(Fx=x, Fy=y, frame_width=frame_width, frame_height=frame_height,
-                               ball_radius=radius, time=time_now, tag_to_cam_mtx=tag_to_cam_mtx)
+                               ball_radius=radius, time=curr_time, tag_to_cam_mtx=tag_to_cam_mtx)
 
             framePosList.append((x, y))
             cv.circle(frame, (int(x), int(y)), int(radius), (0, 255, 0), 2)
@@ -78,14 +83,17 @@ def TrackBallPos(cap, speed, angle):
             # Draw the yellow mathematical prediction path
             draw_polynom_on_frame(frame, tag_to_cam_mtx)
 
+        draw_axis(frame)
         # FIX 2: You need these lines to see the video on Windows
         cv.imshow('Processing...', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to skip a video
             break
             # Save results to JSON
     recordData.write_data(polyCoefList, 0, 0, 0, speed, angle, 0)
+    print(polyCoefList)
     # Clean up window before starting the next video
     cv.destroyAllWindows()
+
 def calc_ball_3d_pos(tag_to_cam_mtx, Fx, Fy, frame_width, frame_height, ball_radius):
     plainY = (2.0 * BALL_RADIUS * frame_height) / (2.0 * ball_radius)
 
@@ -119,11 +127,11 @@ def record_ball_3d_pos(Fx, Fy, frame_width, frame_height, ball_radius, time, tag
 def calc_ball_trajecktory_polynom_on_all_axis():
     if len(realPosList[3]) < 4:
         return
-    polyCoefList[0] = np.poly1d(np.polyfit(np.array(realPosList[3]), np.array(realPosList[0]), 3))
-    polyCoefList[1] = np.poly1d(np.polyfit(np.array(realPosList[3]), np.array(realPosList[1]), 3))
-    polyCoefList[2] = np.poly1d(np.polyfit(np.array(realPosList[3]), np.array(realPosList[2]), 3))
-    print([a[0] for a in realPosList])
-    print([c(realPosList[3][0]) for c in polyCoefList])
+    polyCoefList[0] = np.poly1d(np.polyfit(np.array(realPosList[3]), np.array(realPosList[0]), 2))
+    polyCoefList[1] = np.poly1d(np.polyfit(np.array(realPosList[3]), np.array(realPosList[1]), 2))
+    polyCoefList[2] = np.poly1d(np.polyfit(np.array(realPosList[3]), np.array(realPosList[2]), 2))
+    # print([a[0] for a in realPosList])
+    # print([c(realPosList[3][0]) for c in polyCoefList])
 
 
 def Draw_polynom_on_frame(frame, tag_to_cam_mtx):
@@ -163,7 +171,7 @@ def draw_polynom_on_frame(frame, tag_to_cam_mtx):
         # print(f"Pixel Pos: {Px}, {Py}")
 
         # TEMPORARILY REMOVE the bounds check to see if pixels are just slightly off-screen
-        cv.circle(frame, (int(Px), int(Py)), 5, (0, 255, 255), -1)
+        cv.circle(frame, (int(Px), int(Py)), int(pr), (0, 255, 255), -1)
 
         ptsList.append((Px, Py))
         if len(ptsList) > 1:
